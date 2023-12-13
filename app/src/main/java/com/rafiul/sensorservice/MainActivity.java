@@ -1,9 +1,9 @@
 package com.rafiul.sensorservice;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Room;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -15,6 +15,8 @@ import android.os.Looper;
 import com.rafiul.sensorservice.database.SensorData;
 import com.rafiul.sensorservice.database.SensorDatabase;
 import com.rafiul.sensorservice.databinding.ActivityMainBinding;
+import com.rafiul.sensorservice.series.LightSeries;
+import com.rafiul.sensorservice.series.ProximitySeries;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         if (proximitySensor != null) {
-            sensorManager.registerListener( this, proximitySensor, (int) TimeUnit.MINUTES.toMicros(5));
+            sensorManager.registerListener(this, proximitySensor, (int) TimeUnit.MINUTES.toMicros(5));
         }
 
         if (accelerometerSensor != null) {
@@ -70,6 +72,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         sensorDatabase = SensorDatabase.getSensorDataBase(getApplicationContext());
+
+        activityMainBinding.tvProximitySensor.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ProximitySeries.class);
+            startActivity(intent);
+        });
+
+        activityMainBinding.tvLightSensor.setOnClickListener(v -> {
+            Intent intent = new Intent(this, LightSeries.class);
+            startActivity(intent);
+        });
 
     }
 
@@ -91,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         CompositeDisposable compositeDisposable = new CompositeDisposable();
-        compositeDisposable.add(Observable.interval(2, TimeUnit.SECONDS).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableObserver<Long>() {
+        compositeDisposable.add(Observable.interval(1, TimeUnit.MINUTES).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableObserver<Long>() {
             @Override
             public void onNext(Long aLong) {
                 handler.postDelayed(new Runnable() {
@@ -99,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     public void run() {
                         sensorDatabase.sensorDAO().insert(new SensorData(new Date().getTime(), proximityValue, lightSensorValue, accelerometerValue[0], accelerometerValue[1], accelerometerValue[2], gyroscopeValue[0], gyroscopeValue[1], gyroscopeValue[2])).subscribe();
                     }
-                }, TimeUnit.MINUTES.toMillis(1));
+                }, TimeUnit.MINUTES.toMillis(4));
             }
 
             @Override
