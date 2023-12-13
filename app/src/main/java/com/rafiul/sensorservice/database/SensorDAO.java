@@ -5,7 +5,6 @@ import androidx.room.Insert;
 import androidx.room.Query;
 
 
-
 import java.util.List;
 
 import io.reactivex.Single;
@@ -15,7 +14,8 @@ public interface SensorDAO {
     @Insert
     Single<Long> insert(SensorData sensorData);
 
-    @Query("SELECT * FROM sensor_data")
+    @Query("SELECT * FROM sensor_data ORDER BY time DESC")
+   // @Query("SELECT * FROM sensor_data ORDER BY time DESC LIMIT 50")
     List<SensorData> getAllSensorData();
 
 }

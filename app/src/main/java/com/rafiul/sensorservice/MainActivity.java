@@ -15,8 +15,7 @@ import android.os.Looper;
 import com.rafiul.sensorservice.database.SensorData;
 import com.rafiul.sensorservice.database.SensorDatabase;
 import com.rafiul.sensorservice.databinding.ActivityMainBinding;
-import com.rafiul.sensorservice.series.LightSeries;
-import com.rafiul.sensorservice.series.ProximitySeries;
+import com.rafiul.sensorservice.series.LinearChart;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -74,12 +73,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorDatabase = SensorDatabase.getSensorDataBase(getApplicationContext());
 
         activityMainBinding.tvProximitySensor.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ProximitySeries.class);
+            Intent intent = new Intent(this, LinearChart.class);
+            intent.putExtra("Sensor", "Proximity");
             startActivity(intent);
         });
-
         activityMainBinding.tvLightSensor.setOnClickListener(v -> {
-            Intent intent = new Intent(this, LightSeries.class);
+            Intent intent = new Intent(this, LinearChart.class);
+            intent.putExtra("Sensor", "Light");
             startActivity(intent);
         });
 

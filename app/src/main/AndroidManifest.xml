@@ -16,7 +16,7 @@
             android:name=".series.LightSeries"
             android:exported="false" />
         <activity
-            android:name=".series.ProximitySeries"
+            android:name=".series.LinearChart"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
