@@ -3,6 +3,7 @@ package com.rafiul.sensorservice.service;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +19,7 @@ import android.os.Looper;
 import androidx.core.app.NotificationCompat;
 
 
+import com.rafiul.sensorservice.MainActivity;
 import com.rafiul.sensorservice.R;
 import com.rafiul.sensorservice.database.SensorData;
 import com.rafiul.sensorservice.database.SensorDatabase;
@@ -35,14 +37,10 @@ public class SensorRecordService extends Service implements SensorEventListener 
     private static final int NOTIFICATION_ID = 123;
 
     private SensorDatabase sensorDatabase;
-    private CompositeDisposable disposables = new CompositeDisposable();
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
     private SensorManager sensorManager;
-    private Sensor proximitySensor;
-    private Sensor accelerometerSensor;
-    private Sensor lightSensor;
-    private Sensor gyroscopeSensor;
-
+    private Sensor lightSensor, proximitySensor, accelerometerSensor, gyroscopeSensor;
     float proximityValue, lightSensorValue;
     float[] accelerometerValue, gyroscopeValue;
 
@@ -53,7 +51,7 @@ public class SensorRecordService extends Service implements SensorEventListener 
         public void run() {
             disposables.add(
                     Observable.fromCallable(() -> {
-//                                recordSensorData();
+                                recordSensorData();
                                 return true;
                             })
                             .subscribeOn(Schedulers.io())
@@ -63,11 +61,20 @@ public class SensorRecordService extends Service implements SensorEventListener 
         }
     };
 
+    private final Runnable notificationRunnable = new Runnable() {
+        @Override
+        public void run() {
+            updateNotification();
+            handler.postDelayed(this, TimeUnit.MINUTES.toMillis(1));
+        }
+    };
+
     @Override
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, createNotification());
+        handler.postDelayed(notificationRunnable, TimeUnit.MINUTES.toMillis(1));
         sensorDatabase = SensorDatabase.getSensorDataBase(this);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
@@ -85,7 +92,14 @@ public class SensorRecordService extends Service implements SensorEventListener 
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        recordSensorData(sensorEvent);
+        switch (sensorEvent.sensor.getType()) {
+            case Sensor.TYPE_PROXIMITY -> proximityValue = sensorEvent.values[0];
+            case Sensor.TYPE_LIGHT -> lightSensorValue = sensorEvent.values[0];
+            case Sensor.TYPE_ACCELEROMETER -> accelerometerValue = sensorEvent.values;
+            case Sensor.TYPE_GYROSCOPE -> gyroscopeValue = sensorEvent.values;
+        }
+        recordSensorData();
+
     }
 
     @Override
@@ -128,11 +142,19 @@ public class SensorRecordService extends Service implements SensorEventListener 
     }
 
     private Notification createNotification() {
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentTitle("Sensor Service")
                 .setContentText("Running in the background")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
 
         return builder.build();
     }
@@ -149,20 +171,12 @@ public class SensorRecordService extends Service implements SensorEventListener 
         }
     }
 
-    private void recordSensorData(SensorEvent sensorEvent) {
-        // Obtain sensor values
-        long timestamp = System.currentTimeMillis();
+    private void updateNotification() {
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        manager.notify(NOTIFICATION_ID, createNotification());
+    }
 
-        switch (sensorEvent.sensor.getType()) {
-            case Sensor.TYPE_PROXIMITY:
-                proximityValue = sensorEvent.values[0];
-            case Sensor.TYPE_LIGHT:
-                lightSensorValue = sensorEvent.values[0];
-            case Sensor.TYPE_ACCELEROMETER:
-                accelerometerValue = sensorEvent.values;
-            case Sensor.TYPE_GYROSCOPE:
-                gyroscopeValue = sensorEvent.values;
-        }
+    private void recordSensorData() {
         // Insert the sensor data into the database
         disposables.add(
                 sensorDatabase.sensorDAO().insert(new SensorData(new Date().getTime(), proximityValue, lightSensorValue, accelerometerValue[0], accelerometerValue[1], accelerometerValue[2], gyroscopeValue[0], gyroscopeValue[1], gyroscopeValue[2])).subscribe()

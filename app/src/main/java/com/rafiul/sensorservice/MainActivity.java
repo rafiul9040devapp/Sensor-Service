@@ -16,6 +16,7 @@ import com.rafiul.sensorservice.database.SensorData;
 import com.rafiul.sensorservice.database.SensorDatabase;
 import com.rafiul.sensorservice.databinding.ActivityMainBinding;
 import com.rafiul.sensorservice.series.LinearChart;
+import com.rafiul.sensorservice.service.SensorRecordService;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +46,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         activityMainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(activityMainBinding.getRoot());
+
+//        // Start the service if not already running
+//        startService(new Intent(this, SensorRecordService.class));
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);

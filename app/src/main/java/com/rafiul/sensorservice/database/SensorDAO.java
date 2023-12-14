@@ -14,8 +14,7 @@ public interface SensorDAO {
     @Insert
     Single<Long> insert(SensorData sensorData);
 
-    @Query("SELECT * FROM sensor_data ORDER BY time DESC")
-   // @Query("SELECT * FROM sensor_data ORDER BY time DESC LIMIT 50")
+   // @Query("SELECT * FROM sensor_data ORDER BY time DESC")
+    @Query("SELECT * FROM sensor_data ORDER BY time DESC LIMIT 150")
     List<SensorData> getAllSensorData();
-
 }
