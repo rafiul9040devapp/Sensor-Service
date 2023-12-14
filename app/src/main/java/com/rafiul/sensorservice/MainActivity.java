@@ -15,6 +15,7 @@ import android.os.Looper;
 import com.rafiul.sensorservice.database.SensorData;
 import com.rafiul.sensorservice.database.SensorDatabase;
 import com.rafiul.sensorservice.databinding.ActivityMainBinding;
+import com.rafiul.sensorservice.series.BarChart;
 import com.rafiul.sensorservice.series.LinearChart;
 import com.rafiul.sensorservice.service.SensorRecordService;
 
@@ -86,6 +87,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             intent.putExtra("Sensor", "Light");
             startActivity(intent);
         });
+
+        activityMainBinding.tvAccelerometer.setOnClickListener(v -> {
+            Intent intent = new Intent(this, BarChart.class);
+            intent.putExtra("Sensor", "Accelerometer");
+            startActivity(intent);
+        });
+
+        activityMainBinding.tvGyroscope.setOnClickListener(v -> {
+            Intent intent = new Intent(this, BarChart.class);
+            intent.putExtra("Sensor", "Gyroscope");
+            startActivity(intent);
+        });
+
 
     }
 

@@ -4,16 +4,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".series.LightSeries">
+    tools:context=".series.BarChart">
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/getTheGraph"
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/getTheGraphX"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="52dp"
+        android:layout_height="150dp"
+        android:layout_margin="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/getTheGraphY"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_margin="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/getTheGraphX"/>
+
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/getTheGraphZ"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_margin="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/getTheGraphY" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

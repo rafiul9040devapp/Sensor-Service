@@ -62,12 +62,14 @@ public class LinearChart extends AppCompatActivity {
             // Convert the formatted time to minutes
             long timeInMinutes = getTimeInMinutes(formattedTime);
 
-            float proximityValue = switch (sensorName) {
+            float sensorValue = switch (sensorName) {
                 case "Proximity" -> sensorData.getProximity();
                 case "Light" -> sensorData.getLight();
+                case "Accelerometer" -> sensorData.getAccelerometerY();
+                case "Gyroscope" -> sensorData.getGyroscopeY();
                 default -> 0f;
             };
-            Entry chartEntry = new Entry(timeInMinutes, proximityValue);
+            Entry chartEntry = new Entry(timeInMinutes, sensorValue);
             entryArrayList.add(chartEntry);
         }
 
