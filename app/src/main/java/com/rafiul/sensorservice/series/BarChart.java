@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class BarChart extends AppCompatActivity {
 
@@ -38,9 +40,27 @@ public class BarChart extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         String sensorName = "";
+
         if (bundle != null) {
             sensorName = (String) bundle.get("Sensor");
         }
+        switch (Objects.requireNonNull(sensorName)) {
+            case "Accelerometer" -> binding.toolbar.setTitle("Accelerometer");
+            case "Gyroscope" -> binding.toolbar.setTitle("Gyroscope");
+            default -> binding.toolbar.setTitle("N/A");
+        }
+
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+        binding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
         setLineChartData(sensorName);
     }
 
@@ -107,7 +127,7 @@ public class BarChart extends AppCompatActivity {
         BarData data = new BarData(barDataSet);
         binding.getTheGraphX.setData(data);
         binding.getTheGraphX.setBackgroundColor(getResources().getColor(R.color.white));
-       // binding.getTheGraph.animateXY(2000, 2000, Easing.EaseInCubic);
+        // binding.getTheGraph.animateXY(2000, 2000, Easing.EaseInCubic);
 
         //hiding the grey background of the chart, default false if not set
         binding.getTheGraphX.setDrawGridBackground(false);

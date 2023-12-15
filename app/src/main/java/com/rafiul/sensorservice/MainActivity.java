@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 //        // Start the service if not already running
 //        startService(new Intent(this, SensorRecordService.class));
+        activityMainBinding.toolbar.setTitle("Sensor Service");
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
