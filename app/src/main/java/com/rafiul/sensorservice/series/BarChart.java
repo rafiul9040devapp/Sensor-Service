@@ -16,7 +16,8 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.rafiul.sensorservice.R;
 import com.rafiul.sensorservice.database.SensorData;
 import com.rafiul.sensorservice.database.SensorDatabase;
-import com.rafiul.sensorservice.databinding.ActivityLightSeriesBinding;
+import com.rafiul.sensorservice.databinding.ActivityBarChartBinding;
+
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,13 +29,13 @@ import java.util.Map;
 
 public class BarChart extends AppCompatActivity {
 
-    private ActivityLightSeriesBinding binding;
+    private ActivityBarChartBinding binding;
     private SensorDatabase sensorDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityLightSeriesBinding.inflate(getLayoutInflater());
+        binding = ActivityBarChartBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         sensorDatabase = SensorDatabase.getSensorDataBase(getApplicationContext());
