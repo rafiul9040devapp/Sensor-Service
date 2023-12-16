@@ -112,21 +112,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         .subscribeWith(new DisposableObserver<Long>() {
                             @Override
                             public void onNext(Long aLong) {
-                                handler.postDelayed(() -> {
-                                    sensorDatabase.sensorDAO().insert(
-                                            new SensorData(
-                                                    new Date().getTime(),
-                                                    proximityValue,
-                                                    lightSensorValue,
-                                                    accelerometerValue[0],
-                                                    accelerometerValue[1],
-                                                    accelerometerValue[2],
-                                                    gyroscopeValue[0],
-                                                    gyroscopeValue[1],
-                                                    gyroscopeValue[2]
-                                            )
-                                    ).subscribe();
-                                }, TimeUnit.MINUTES.toMillis(4));
+                                handler.postDelayed(() -> sensorDatabase.sensorDAO().insert(
+                                        new SensorData(
+                                                new Date().getTime(),
+                                                proximityValue,
+                                                lightSensorValue,
+                                                accelerometerValue[0],
+                                                accelerometerValue[1],
+                                                accelerometerValue[2],
+                                                gyroscopeValue[0],
+                                                gyroscopeValue[1],
+                                                gyroscopeValue[2]
+                                        )
+                                ).subscribe(), TimeUnit.MINUTES.toMillis(4));
                             }
 
                             @Override
