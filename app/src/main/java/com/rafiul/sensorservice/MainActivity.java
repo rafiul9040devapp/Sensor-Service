@@ -17,7 +17,6 @@ import com.rafiul.sensorservice.database.SensorDatabase;
 import com.rafiul.sensorservice.databinding.ActivityMainBinding;
 import com.rafiul.sensorservice.series.BarChart;
 import com.rafiul.sensorservice.series.LinearChart;
-import com.rafiul.sensorservice.service.SensorRecordService;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -29,28 +28,22 @@ import io.reactivex.observers.DisposableObserver;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    private ActivityMainBinding activityMainBinding;
-
+    private ActivityMainBinding binding;
     private SensorManager sensorManager;
     private Sensor lightSensor, proximitySensor, accelerometerSensor, gyroscopeSensor;
-
     float proximityValue, lightSensorValue;
     float[] accelerometerValue, gyroscopeValue;
-
     private final Handler handler = new Handler(Looper.getMainLooper());
-
     private SensorDatabase sensorDatabase;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        activityMainBinding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(activityMainBinding.getRoot());
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-//        // Start the service if not already running
-//        startService(new Intent(this, SensorRecordService.class));
-        activityMainBinding.toolbar.setTitle("Sensor Service");
+        binding.toolbar.setTitle("Sensor Service");
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -59,92 +52,94 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
 
-        if (proximitySensor != null) {
-            sensorManager.registerListener(this, proximitySensor, (int) TimeUnit.MINUTES.toMicros(5));
-        }
-
-        if (accelerometerSensor != null) {
-            sensorManager.registerListener(this, accelerometerSensor, (int) TimeUnit.MINUTES.toMicros(5));
-        }
-
-        if (lightSensor != null) {
-            sensorManager.registerListener(this, lightSensor, (int) TimeUnit.MINUTES.toMicros(5));
-        }
-
-        if (gyroscopeSensor != null) {
-            sensorManager.registerListener(this, gyroscopeSensor, (int) TimeUnit.MINUTES.toMicros(5));
-        }
-
+        registerSensorListener(proximitySensor);
+        registerSensorListener(accelerometerSensor);
+        registerSensorListener(lightSensor);
+        registerSensorListener(gyroscopeSensor);
 
         sensorDatabase = SensorDatabase.getSensorDataBase(getApplicationContext());
+        setCardClickListeners();
 
-        activityMainBinding.cardProximity.setOnClickListener(v -> {
-            Intent intent = new Intent(this, LinearChart.class);
-            intent.putExtra("Sensor", "Proximity");
-            startActivity(intent);
-        });
-        activityMainBinding.cardLight.setOnClickListener(v -> {
-            Intent intent = new Intent(this, LinearChart.class);
-            intent.putExtra("Sensor", "Light");
-            startActivity(intent);
-        });
+    }
 
-        activityMainBinding.cardAccelerometer.setOnClickListener(v -> {
-            Intent intent = new Intent(this, BarChart.class);
-            intent.putExtra("Sensor", "Accelerometer");
-            startActivity(intent);
-        });
+    private void registerSensorListener(Sensor sensor) {
+        if (sensor != null) {
+            sensorManager.registerListener(this, sensor, (int) TimeUnit.MINUTES.toMicros(5));
+        }
+    }
 
-        activityMainBinding.cardGyroscope.setOnClickListener(v -> {
-            Intent intent = new Intent(this, BarChart.class);
-            intent.putExtra("Sensor", "Gyroscope");
-            startActivity(intent);
-        });
+    private void setCardClickListeners() {
+        binding.cardProximity.setOnClickListener(v -> startChartActivity("Proximity"));
+        binding.cardLight.setOnClickListener(v -> startChartActivity("Light"));
+        binding.cardAccelerometer.setOnClickListener(v -> startChartActivity("Accelerometer"));
+        binding.cardGyroscope.setOnClickListener(v -> startChartActivity("Gyroscope"));
+    }
 
-
+    private void startChartActivity(String sensorType) {
+        Intent intent = new Intent(this, sensorType.equals("Accelerometer") ? BarChart.class : LinearChart.class);
+        intent.putExtra("Sensor", sensorType);
+        startActivity(intent);
     }
 
     @SuppressLint("SetTextI18n")
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_PROXIMITY) {
-            proximityValue = sensorEvent.values[0];
-            activityMainBinding.tvProximitySensor.setText("PROXIMITY SENSOR: " + proximityValue);
-        } else if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT) {
-            lightSensorValue = sensorEvent.values[0];
-            activityMainBinding.tvLightSensor.setText("LIGHT SENSOR: " + lightSensorValue);
-        } else if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            accelerometerValue = sensorEvent.values;
-            activityMainBinding.tvAccelerometer.setText("ACCELEROMETER:" + "\nX=" + accelerometerValue[0] + "\nY=" + accelerometerValue[1] + "\nZ=" + accelerometerValue[2]);
-        } else if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-            gyroscopeValue = sensorEvent.values;
-            activityMainBinding.tvGyroscope.setText("GYROSCOPE:" + "\nX=" + gyroscopeValue[0] + "\nY=" + gyroscopeValue[1] + "\nZ=" + gyroscopeValue[2]);
+        switch (sensorEvent.sensor.getType()) {
+            case Sensor.TYPE_PROXIMITY -> {
+                proximityValue = sensorEvent.values[0];
+                binding.tvProximitySensor.setText("PROXIMITY SENSOR: " + proximityValue);
+            }
+            case Sensor.TYPE_LIGHT -> {
+                lightSensorValue = sensorEvent.values[0];
+                binding.tvLightSensor.setText("LIGHT SENSOR: " + lightSensorValue);
+            }
+            case Sensor.TYPE_ACCELEROMETER -> {
+                accelerometerValue = sensorEvent.values;
+                binding.tvAccelerometer.setText("ACCELEROMETER:" + "\nX=" + accelerometerValue[0] + "\nY=" + accelerometerValue[1] + "\nZ=" + accelerometerValue[2]);
+            }
+            case Sensor.TYPE_GYROSCOPE -> {
+                gyroscopeValue = sensorEvent.values;
+                binding.tvGyroscope.setText("GYROSCOPE:" + "\nX=" + gyroscopeValue[0] + "\nY=" + gyroscopeValue[1] + "\nZ=" + gyroscopeValue[2]);
+            }
         }
 
         CompositeDisposable compositeDisposable = new CompositeDisposable();
-        compositeDisposable.add(Observable.interval(1, TimeUnit.MINUTES).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableObserver<Long>() {
-            @Override
-            public void onNext(Long aLong) {
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        sensorDatabase.sensorDAO().insert(new SensorData(new Date().getTime(), proximityValue, lightSensorValue, accelerometerValue[0], accelerometerValue[1], accelerometerValue[2], gyroscopeValue[0], gyroscopeValue[1], gyroscopeValue[2])).subscribe();
-                    }
-                }, TimeUnit.MINUTES.toMillis(4));
-            }
+        compositeDisposable.add(
+                Observable.interval(1, TimeUnit.MINUTES)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableObserver<Long>() {
+                            @Override
+                            public void onNext(Long aLong) {
+                                handler.postDelayed(() -> {
+                                    sensorDatabase.sensorDAO().insert(
+                                            new SensorData(
+                                                    new Date().getTime(),
+                                                    proximityValue,
+                                                    lightSensorValue,
+                                                    accelerometerValue[0],
+                                                    accelerometerValue[1],
+                                                    accelerometerValue[2],
+                                                    gyroscopeValue[0],
+                                                    gyroscopeValue[1],
+                                                    gyroscopeValue[2]
+                                            )
+                                    ).subscribe();
+                                }, TimeUnit.MINUTES.toMillis(4));
+                            }
 
-            @Override
-            public void onError(Throwable e) {
-                // Handle the error
-            }
+                            @Override
+                            public void onError(Throwable e) {
+                                // Handle the error
+                            }
 
-            @Override
-            public void onComplete() {
-                if (!compositeDisposable.isDisposed()) {
-                    compositeDisposable.dispose();
-                }
-            }
-        }));
+                            @Override
+                            public void onComplete() {
+                                if (!compositeDisposable.isDisposed()) {
+                                    compositeDisposable.dispose();
+                                }
+                            }
+                        })
+        );
     }
 
     @Override
@@ -155,22 +150,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (proximitySensor != null) {
-            sensorManager.registerListener(this, proximitySensor, (int) TimeUnit.MINUTES.toMicros(5));
-        }
-
-        if (accelerometerSensor != null) {
-            sensorManager.registerListener(this, accelerometerSensor, (int) TimeUnit.MINUTES.toMicros(5));
-        }
-
-        if (lightSensor != null) {
-            sensorManager.registerListener(this, lightSensor, (int) TimeUnit.MINUTES.toMicros(5));
-        }
-
-        if (gyroscopeSensor != null) {
-            sensorManager.registerListener(this, gyroscopeSensor, (int) TimeUnit.MINUTES.toMicros(5));
-        }
+        registerSensorListener(proximitySensor);
+        registerSensorListener(accelerometerSensor);
+        registerSensorListener(lightSensor);
+        registerSensorListener(gyroscopeSensor);
     }
 
     @Override
