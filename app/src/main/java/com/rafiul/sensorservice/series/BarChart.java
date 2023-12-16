@@ -119,6 +119,7 @@ public class BarChart extends AppCompatActivity {
 
             barChart.animateY(1000);
             barChart.animateX(1000);
+            barChart.setExtraBottomOffset(20f);
 
             XAxis xAxis = barChart.getXAxis();
             xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);

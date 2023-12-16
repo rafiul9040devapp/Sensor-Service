@@ -18,7 +18,6 @@ import android.os.Looper;
 
 import androidx.core.app.NotificationCompat;
 
-
 import com.rafiul.sensorservice.MainActivity;
 import com.rafiul.sensorservice.R;
 import com.rafiul.sensorservice.database.SensorData;
@@ -41,8 +40,8 @@ public class SensorRecordService extends Service implements SensorEventListener 
 
     private SensorManager sensorManager;
     private Sensor lightSensor, proximitySensor, accelerometerSensor, gyroscopeSensor;
-    float proximityValue, lightSensorValue;
-    float[] accelerometerValue, gyroscopeValue;
+    private float proximityValue, lightSensorValue;
+    private float[] accelerometerValue, gyroscopeValue;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -50,10 +49,7 @@ public class SensorRecordService extends Service implements SensorEventListener 
         @Override
         public void run() {
             disposables.add(
-                    Observable.fromCallable(() -> {
-                                recordSensorData();
-                                return true;
-                            })
+                    Observable.fromCallable(() -> recordSensorData())
                             .subscribeOn(Schedulers.io())
                             .subscribe()
             );
@@ -68,6 +64,7 @@ public class SensorRecordService extends Service implements SensorEventListener 
             handler.postDelayed(this, TimeUnit.MINUTES.toMillis(1));
         }
     };
+
 
     @Override
     public void onCreate() {
@@ -99,29 +96,23 @@ public class SensorRecordService extends Service implements SensorEventListener 
             case Sensor.TYPE_GYROSCOPE -> gyroscopeValue = sensorEvent.values;
         }
         recordSensorData();
-
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // Handle accuracy changes if needed
+
     }
 
     private void startSensorListener() {
-        if (proximitySensor != null) {
-            sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }
+        registerSensorListener(proximitySensor);
+        registerSensorListener(accelerometerSensor);
+        registerSensorListener(lightSensor);
+        registerSensorListener(gyroscopeSensor);
+    }
 
-        if (accelerometerSensor != null) {
-            sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }
-
-        if (lightSensor != null) {
-            sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }
-
-        if (gyroscopeSensor != null) {
-            sensorManager.registerListener(this, gyroscopeSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    private void registerSensorListener(Sensor sensor) {
+        if (sensor != null) {
+            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
@@ -142,11 +133,9 @@ public class SensorRecordService extends Service implements SensorEventListener 
     }
 
     private Notification createNotification() {
-
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_background)
@@ -176,11 +165,22 @@ public class SensorRecordService extends Service implements SensorEventListener 
         manager.notify(NOTIFICATION_ID, createNotification());
     }
 
-    private void recordSensorData() {
-        // Insert the sensor data into the database
+    private boolean recordSensorData() {
         disposables.add(
-                sensorDatabase.sensorDAO().insert(new SensorData(new Date().getTime(), proximityValue, lightSensorValue, accelerometerValue[0], accelerometerValue[1], accelerometerValue[2], gyroscopeValue[0], gyroscopeValue[1], gyroscopeValue[2])).subscribe()
+                sensorDatabase.sensorDAO().insert(
+                        new SensorData(
+                                new Date().getTime(),
+                                proximityValue,
+                                lightSensorValue,
+                                accelerometerValue[0],
+                                accelerometerValue[1],
+                                accelerometerValue[2],
+                                gyroscopeValue[0],
+                                gyroscopeValue[1],
+                                gyroscopeValue[2]
+                        )
+                ).subscribe()
         );
+        return true;
     }
-
 }

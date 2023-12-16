@@ -11,6 +11,8 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.rafiul.sensorservice.database.SensorData;
 import com.rafiul.sensorservice.database.SensorDatabase;
@@ -76,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void startChartActivity(String sensorType) {
-        Intent intent = new Intent(this, sensorType.equals("Accelerometer") ? BarChart.class : LinearChart.class);
+        Intent intent = new Intent(this, sensorType.equals("Accelerometer") || sensorType.equals("Gyroscope") ? BarChart.class : LinearChart.class);
         intent.putExtra("Sensor", sensorType);
         startActivity(intent);
     }
@@ -129,7 +131,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                             @Override
                             public void onError(Throwable e) {
-                                // Handle the error
+                                Log.e("TAG", "Error in Observable: " + e.getMessage(), e);
+                                Toast.makeText(getApplicationContext(), "An error occurred: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
 
                             @Override

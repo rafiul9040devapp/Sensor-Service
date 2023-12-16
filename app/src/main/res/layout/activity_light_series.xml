@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
     <!-- Scrollable Content -->
     <ScrollView
@@ -22,10 +22,10 @@
                 android:background="?attr/colorPrimary"
                 android:elevation="4dp"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:navigationIcon="?android:attr/homeAsUpIndicator"
-                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"/>
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:navigationIcon="?android:attr/homeAsUpIndicator" />
 
             <!-- BarChart X -->
             <androidx.cardview.widget.CardView
@@ -42,7 +42,7 @@
                 <com.github.mikephil.charting.charts.BarChart
                     android:id="@+id/getTheGraphX"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent" />
             </androidx.cardview.widget.CardView>
 
             <!-- BarChart Y -->
@@ -60,7 +60,7 @@
                 <com.github.mikephil.charting.charts.BarChart
                     android:id="@+id/getTheGraphY"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent" />
             </androidx.cardview.widget.CardView>
 
             <!-- BarChart Z -->
@@ -78,7 +78,7 @@
                 <com.github.mikephil.charting.charts.BarChart
                     android:id="@+id/getTheGraphZ"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent" />
             </androidx.cardview.widget.CardView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
