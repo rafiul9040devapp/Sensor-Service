@@ -21,9 +21,10 @@ import com.rafiul.sensorservice.databinding.ActivityLightSeriesBinding;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
+import java.util.Map;
 
 public class BarChart extends AppCompatActivity {
 
@@ -44,34 +45,14 @@ public class BarChart extends AppCompatActivity {
         if (bundle != null) {
             sensorName = (String) bundle.get("Sensor");
         }
-        switch (Objects.requireNonNull(sensorName)) {
-            case "Accelerometer" -> binding.toolbar.setTitle("Accelerometer");
-            case "Gyroscope" -> binding.toolbar.setTitle("Gyroscope");
-            default -> binding.toolbar.setTitle("N/A");
-        }
-
-        setSupportActionBar(binding.toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
-        binding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
-        setLineChartData(sensorName);
+        setupActionBar(sensorName);
+        setBarChartData(sensorName);
     }
 
-    private void setLineChartData(String sensorName) {
-
+    private void setBarChartData(String sensorName) {
         List<SensorData> allSensorData = sensorDatabase.sensorDAO().getAllSensorData();
 
-        ArrayList<BarEntry> entryArrayListAxisX = new ArrayList<>();
-        ArrayList<BarEntry> entryArrayListAxisY = new ArrayList<>();
-        ArrayList<BarEntry> entryArrayListAxisZ = new ArrayList<>();
-
+        Map<String, ArrayList<BarEntry>> entryArrayListMap = new HashMap<>();
 
         for (SensorData sensorData : allSensorData) {
             long timeStampInMillis = sensorData.getTimeStamp();
@@ -80,220 +61,97 @@ public class BarChart extends AppCompatActivity {
             String formattedTime = sdf.format(date);
             long timeInMinutes = getTimeInMinutes(formattedTime);
 
-            float sensorValueX = switch (sensorName) {
-                case "Accelerometer" -> sensorData.getAccelerometerX();
-                case "Gyroscope" -> sensorData.getGyroscopeX();
-                default -> 0f;
-            };
-            BarEntry chartEntryX = new BarEntry(timeInMinutes, sensorValueX);
-            entryArrayListAxisX.add(chartEntryX);
-
-
-            float sensorValueY = switch (sensorName) {
-                case "Accelerometer" -> sensorData.getAccelerometerY();
-                case "Gyroscope" -> sensorData.getGyroscopeY();
-                default -> 0f;
-            };
-            BarEntry chartEntryY = new BarEntry(timeInMinutes, sensorValueY);
-            entryArrayListAxisY.add(chartEntryY);
-
-            float sensorValueZ = switch (sensorName) {
-                case "Accelerometer" -> sensorData.getAccelerometerZ();
-                case "Gyroscope" -> sensorData.getGyroscopeZ();
-                default -> 0f;
-            };
-            BarEntry chartEntryZ = new BarEntry(timeInMinutes, sensorValueZ);
-            entryArrayListAxisZ.add(chartEntryZ);
-
+            for (String axis : new String[]{"X", "Y", "Z"}) {
+                float sensorValue = getSensorValue(sensorName, sensorData, axis);
+                BarEntry chartEntry = new BarEntry(timeInMinutes, sensorValue);
+                entryArrayListMap.computeIfAbsent(axis, k -> new ArrayList<>()).add(chartEntry);
+            }
         }
-        BarDataSet barDataSetX = new BarDataSet(entryArrayListAxisX, "X-Axis");
-        barDataSetX.setColor(R.color.purple);
-        barDataSetX.setValueTextSize(20f);
-        initBarChartX(barDataSetX);
 
-        BarDataSet barDataSetY = new BarDataSet(entryArrayListAxisY, "Y-Axis");
-        barDataSetY.setColor(R.color.purple);
-        barDataSetY.setValueTextSize(20f);
-        initBarChartY(barDataSetY);
-
-        BarDataSet barDataSetZ = new BarDataSet(entryArrayListAxisZ, "Z-Axis");
-        barDataSetZ.setColor(R.color.purple);
-        barDataSetZ.setValueTextSize(20f);
-        initBarChartZ(barDataSetZ);
+        for (Map.Entry<String, ArrayList<BarEntry>> entry : entryArrayListMap.entrySet()) {
+            BarDataSet dataSet = new BarDataSet(entry.getValue(), entry.getKey() + "-Axis");
+            dataSet.setColor(R.color.purple);
+            dataSet.setValueTextSize(20f);
+            initBarChart(getChartForAxis(entry.getKey()), dataSet);
+        }
     }
 
-    private void initBarChartX(BarDataSet barDataSet) {
-
-        BarData data = new BarData(barDataSet);
-        binding.getTheGraphX.setData(data);
-        binding.getTheGraphX.setBackgroundColor(getResources().getColor(R.color.white));
-        // binding.getTheGraph.animateXY(2000, 2000, Easing.EaseInCubic);
-
-        //hiding the grey background of the chart, default false if not set
-        binding.getTheGraphX.setDrawGridBackground(false);
-        //remove the bar shadow, default false if not set
-        binding.getTheGraphX.setDrawBarShadow(false);
-        //remove border of the chart, default false if not set
-        binding.getTheGraphX.setDrawBorders(false);
-
-        //remove the description label text located at the lower right corner
-        Description description = new Description();
-        description.setEnabled(false);
-        binding.getTheGraphX.setDescription(description);
-
-        //setting animation for y-axis, the bar will pop up from 0 to its value within the time we set
-        binding.getTheGraphX.animateY(1000);
-        //setting animation for x-axis, the bar will pop up separately within the time we set
-        binding.getTheGraphX.animateX(1000);
-
-        XAxis xAxis = binding.getTheGraphX.getXAxis();
-        //change the position of x-axis to the bottom
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        //set the horizontal distance of the grid line
-        xAxis.setGranularity(1f);
-        xAxis.setLabelCount(10);
-        //hiding the x-axis line, default true if not set
-        xAxis.setDrawAxisLine(false);
-        //hiding the vertical grid lines, default true if not set
-        xAxis.setDrawGridLines(false);
-
-        YAxis leftAxis = binding.getTheGraphX.getAxisLeft();
-        //hiding the left y-axis line, default true if not set
-        leftAxis.setDrawAxisLine(true);
-
-        YAxis rightAxis = binding.getTheGraphX.getAxisRight();
-        //hiding the right y-axis line, default true if not set
-        rightAxis.setDrawAxisLine(true);
-
-        Legend legend = binding.getTheGraphX.getLegend();
-        //setting the shape of the legend form to line, default square shape
-        legend.setForm(Legend.LegendForm.LINE);
-        //setting the text size of the legend
-        legend.setTextSize(11f);
-        //setting the alignment of legend toward the chart
-        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
-        //setting the stacking direction of legend
-        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-        //setting the location of legend outside the chart, default false if not set
-        legend.setDrawInside(true);
-
+    private float getSensorValue(String sensorName, SensorData sensorData, String axis) {
+        return switch (sensorName) {
+            case "Accelerometer" -> switch (axis) {
+                case "X" -> sensorData.getAccelerometerX();
+                case "Y" -> sensorData.getAccelerometerY();
+                case "Z" -> sensorData.getAccelerometerZ();
+                default -> 0f;
+            };
+            case "Gyroscope" -> switch (axis) {
+                case "X" -> sensorData.getGyroscopeX();
+                case "Y" -> sensorData.getGyroscopeY();
+                case "Z" -> sensorData.getGyroscopeZ();
+                default -> 0f;
+            };
+            default -> 0f;
+        };
     }
 
-    private void initBarChartY(BarDataSet barDataSet) {
-
-        BarData data = new BarData(barDataSet);
-        binding.getTheGraphY.setData(data);
-        binding.getTheGraphY.setBackgroundColor(getResources().getColor(R.color.white));
-        // binding.getTheGraph.animateXY(2000, 2000, Easing.EaseInCubic);
-
-        //hiding the grey background of the chart, default false if not set
-        binding.getTheGraphY.setDrawGridBackground(false);
-        //remove the bar shadow, default false if not set
-        binding.getTheGraphY.setDrawBarShadow(false);
-        //remove border of the chart, default false if not set
-        binding.getTheGraphY.setDrawBorders(false);
-
-        //remove the description label text located at the lower right corner
-        Description description = new Description();
-        description.setEnabled(false);
-        binding.getTheGraphY.setDescription(description);
-
-        //setting animation for y-axis, the bar will pop up from 0 to its value within the time we set
-        binding.getTheGraphY.animateY(1000);
-        //setting animation for x-axis, the bar will pop up separately within the time we set
-        binding.getTheGraphY.animateX(1000);
-
-        XAxis xAxis = binding.getTheGraphY.getXAxis();
-        //change the position of x-axis to the bottom
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        //set the horizontal distance of the grid line
-        xAxis.setGranularity(1f);
-        xAxis.setLabelCount(10);
-        //hiding the x-axis line, default true if not set
-        xAxis.setDrawAxisLine(false);
-        //hiding the vertical grid lines, default true if not set
-        xAxis.setDrawGridLines(false);
-
-        YAxis leftAxis = binding.getTheGraphY.getAxisLeft();
-        //hiding the left y-axis line, default true if not set
-        leftAxis.setDrawAxisLine(true);
-
-        YAxis rightAxis = binding.getTheGraphY.getAxisRight();
-        //hiding the right y-axis line, default true if not set
-        rightAxis.setDrawAxisLine(true);
-
-        Legend legend = binding.getTheGraphY.getLegend();
-        //setting the shape of the legend form to line, default square shape
-        legend.setForm(Legend.LegendForm.LINE);
-        //setting the text size of the legend
-        legend.setTextSize(11f);
-        //setting the alignment of legend toward the chart
-        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
-        //setting the stacking direction of legend
-        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-        //setting the location of legend outside the chart, default false if not set
-        legend.setDrawInside(true);
-
+    private View getChartForAxis(String axis) {
+        return switch (axis) {
+            case "X" -> binding.getTheGraphX;
+            case "Y" -> binding.getTheGraphY;
+            case "Z" -> binding.getTheGraphZ;
+            default -> throw new IllegalArgumentException("Invalid axis: " + axis);
+        };
     }
 
-    private void initBarChartZ(BarDataSet barDataSet) {
+    private void initBarChart(View barChartView, BarDataSet barDataSet) {
+        if (barChartView instanceof com.github.mikephil.charting.charts.BarChart barChart) {
+            BarData data = new BarData(barDataSet);
+            barChart.setData(data);
+            barChart.setBackgroundColor(getResources().getColor(R.color.white));
 
-        BarData data = new BarData(barDataSet);
-        binding.getTheGraphZ.setData(data);
-        binding.getTheGraphZ.setBackgroundColor(getResources().getColor(R.color.white));
-        // binding.getTheGraph.animateXY(2000, 2000, Easing.EaseInCubic);
+            barChart.setDrawGridBackground(false);
+            barChart.setDrawBarShadow(false);
+            barChart.setDrawBorders(false);
 
-        //hiding the grey background of the chart, default false if not set
-        binding.getTheGraphZ.setDrawGridBackground(false);
-        //remove the bar shadow, default false if not set
-        binding.getTheGraphZ.setDrawBarShadow(false);
-        //remove border of the chart, default false if not set
-        binding.getTheGraphZ.setDrawBorders(false);
+            Description description = new Description();
+            description.setEnabled(false);
+            barChart.setDescription(description);
 
-        //remove the description label text located at the lower right corner
-        Description description = new Description();
-        description.setEnabled(false);
-        binding.getTheGraphZ.setDescription(description);
+            barChart.animateY(1000);
+            barChart.animateX(1000);
 
-        //setting animation for y-axis, the bar will pop up from 0 to its value within the time we set
-        binding.getTheGraphZ.animateY(1000);
-        //setting animation for x-axis, the bar will pop up separately within the time we set
-        binding.getTheGraphZ.animateX(1000);
+            XAxis xAxis = barChart.getXAxis();
+            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+            xAxis.setGranularity(1f);
+            xAxis.setLabelCount(10);
+            xAxis.setDrawAxisLine(false);
+            xAxis.setDrawGridLines(false);
 
-        XAxis xAxis = binding.getTheGraphZ.getXAxis();
-        //change the position of x-axis to the bottom
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        //set the horizontal distance of the grid line
-        xAxis.setGranularity(1f);
-        xAxis.setLabelCount(10);
-        //hiding the x-axis line, default true if not set
-        xAxis.setDrawAxisLine(false);
-        //hiding the vertical grid lines, default true if not set
-        xAxis.setDrawGridLines(false);
+            YAxis leftAxis = barChart.getAxisLeft();
+            leftAxis.setDrawAxisLine(true);
+            YAxis rightAxis = barChart.getAxisRight();
+            rightAxis.setDrawAxisLine(true);
 
-        YAxis leftAxis = binding.getTheGraphZ.getAxisLeft();
-        //hiding the left y-axis line, default true if not set
-        leftAxis.setDrawAxisLine(true);
+            Legend legend = barChart.getLegend();
+            legend.setForm(Legend.LegendForm.LINE);
+            legend.setTextSize(11f);
+            legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+            legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+            legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+            legend.setDrawInside(true);
+        } else {
+            throw new IllegalArgumentException("Invalid view type for BarChart initialization");
+        }
+    }
 
-        YAxis rightAxis = binding.getTheGraphZ.getAxisRight();
-        //hiding the right y-axis line, default true if not set
-        rightAxis.setDrawAxisLine(true);
-
-        Legend legend = binding.getTheGraphZ.getLegend();
-        //setting the shape of the legend form to line, default square shape
-        legend.setForm(Legend.LegendForm.LINE);
-        //setting the text size of the legend
-        legend.setTextSize(11f);
-        //setting the alignment of legend toward the chart
-        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
-        //setting the stacking direction of legend
-        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-        //setting the location of legend outside the chart, default false if not set
-        legend.setDrawInside(true);
-
+    private void setupActionBar(String sensorName) {
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle(sensorName);
+        }
+        binding.toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
     private long getTimeInMinutes(String formattedTime) {
