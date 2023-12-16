@@ -106,7 +106,7 @@ public class BarChart extends AppCompatActivity {
             entryArrayListAxisZ.add(chartEntryZ);
 
         }
-        BarDataSet barDataSetX = new BarDataSet(entryArrayListAxisX, "Z-Axis");
+        BarDataSet barDataSetX = new BarDataSet(entryArrayListAxisX, "X-Axis");
         barDataSetX.setColor(R.color.purple);
         barDataSetX.setValueTextSize(20f);
         initBarChartX(barDataSetX);

@@ -1,12 +1,18 @@
 package com.rafiul.sensorservice.series;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
 
 import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -20,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 
 public class LinearChart extends AppCompatActivity {
@@ -39,6 +46,25 @@ public class LinearChart extends AppCompatActivity {
         if (bundle != null) {
             sensorName = (String) bundle.get("Sensor");
         }
+
+        switch (Objects.requireNonNull(sensorName)) {
+            case "Proximity" -> seriesBinding.toolbar.setTitle("Proximity");
+            case "Light" -> seriesBinding.toolbar.setTitle("Light");
+            default -> seriesBinding.toolbar.setTitle("N/A");
+        }
+
+        setSupportActionBar(seriesBinding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+        seriesBinding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
         setLineChartData(sensorName);
     }
 
@@ -50,13 +76,9 @@ public class LinearChart extends AppCompatActivity {
 
 
         for (SensorData sensorData : proximityList) {
-//            long timeStampInMillis = sensorData.getTimeStamp();
-//            long timeStampInMinutes = timeStampInMillis / (60 * 1000);
 
             long timeStampInMillis = sensorData.getTimeStamp();
-// Convert milliseconds to a Date object
             Date date = new Date(timeStampInMillis);
-// Format the Date object to a string representation with only hour and minute in 24-hour format
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
             String formattedTime = sdf.format(date);
             // Convert the formatted time to minutes
@@ -65,17 +87,16 @@ public class LinearChart extends AppCompatActivity {
             float sensorValue = switch (sensorName) {
                 case "Proximity" -> sensorData.getProximity();
                 case "Light" -> sensorData.getLight();
-                case "Accelerometer" -> sensorData.getAccelerometerY();
-                case "Gyroscope" -> sensorData.getGyroscopeY();
                 default -> 0f;
             };
             Entry chartEntry = new Entry(timeInMinutes, sensorValue);
             entryArrayList.add(chartEntry);
         }
+        settingUpTheLineChart(entryArrayList);
+    }
 
-        //UI part of the code
-
-        LineDataSet lineDataSet = new LineDataSet(entryArrayList, "Lebel");
+    private void settingUpTheLineChart(ArrayList<Entry> entryArrayList) {
+        LineDataSet lineDataSet = new LineDataSet(entryArrayList, "Sensor");
         lineDataSet.setColor(R.color.purple);
         lineDataSet.setCircleRadius(10f);
         lineDataSet.setDrawFilled(true);
@@ -85,14 +106,14 @@ public class LinearChart extends AppCompatActivity {
 
 
         XAxis xAxis = seriesBinding.getTheGraph.getXAxis();
-        // Set a custom label count and granularity
-        xAxis.setLabelCount(10, true); // Set the number of labels you want to display
+        xAxis.setLabelCount(10, true);
         xAxis.setGranularity(1f);
 
         LineData data = new LineData(lineDataSet);
         seriesBinding.getTheGraph.setData(data);
         seriesBinding.getTheGraph.setBackgroundColor(getResources().getColor(R.color.white));
         seriesBinding.getTheGraph.animateXY(1000, 1000, Easing.EaseInCubic);
+
     }
 
     private long getTimeInMinutes(String formattedTime) {

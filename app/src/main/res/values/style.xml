@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/values/styles.xml -->
+<resources>
+    <!-- Base application theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#2196F3</item> <!-- Light Blue -->
+        <item name="colorPrimaryDark">#1976D2</item> <!-- Darker Blue -->
+        <item name="colorAccent">#FF4081</item> <!-- Pink -->
+        <item name="android:windowBackground">#FFFFFF</item> <!-- White background -->
+        <!-- Add more customizations as needed -->
+    </style>
+</resources>
+

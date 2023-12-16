@@ -78,24 +78,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sensorDatabase = SensorDatabase.getSensorDataBase(getApplicationContext());
 
-        activityMainBinding.tvProximitySensor.setOnClickListener(v -> {
+        activityMainBinding.cardProximity.setOnClickListener(v -> {
             Intent intent = new Intent(this, LinearChart.class);
             intent.putExtra("Sensor", "Proximity");
             startActivity(intent);
         });
-        activityMainBinding.tvLightSensor.setOnClickListener(v -> {
+        activityMainBinding.cardLight.setOnClickListener(v -> {
             Intent intent = new Intent(this, LinearChart.class);
             intent.putExtra("Sensor", "Light");
             startActivity(intent);
         });
 
-        activityMainBinding.tvAccelerometer.setOnClickListener(v -> {
+        activityMainBinding.cardAccelerometer.setOnClickListener(v -> {
             Intent intent = new Intent(this, BarChart.class);
             intent.putExtra("Sensor", "Accelerometer");
             startActivity(intent);
         });
 
-        activityMainBinding.tvGyroscope.setOnClickListener(v -> {
+        activityMainBinding.cardGyroscope.setOnClickListener(v -> {
             Intent intent = new Intent(this, BarChart.class);
             intent.putExtra("Sensor", "Gyroscope");
             startActivity(intent);
@@ -115,10 +115,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             activityMainBinding.tvLightSensor.setText("LIGHT SENSOR: " + lightSensorValue);
         } else if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             accelerometerValue = sensorEvent.values;
-            activityMainBinding.tvAccelerometer.setText("ACCELEROMETER: X=" + accelerometerValue[0] + "\nY=" + accelerometerValue[1] + "\nZ=" + accelerometerValue[2]);
+            activityMainBinding.tvAccelerometer.setText("ACCELEROMETER:" + "\nX=" + accelerometerValue[0] + "\nY=" + accelerometerValue[1] + "\nZ=" + accelerometerValue[2]);
         } else if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             gyroscopeValue = sensorEvent.values;
-            activityMainBinding.tvGyroscope.setText("GYROSCOPE: X=" + gyroscopeValue[0] + "\nY=" + gyroscopeValue[1] + "\nZ=" + gyroscopeValue[2]);
+            activityMainBinding.tvGyroscope.setText("GYROSCOPE:" + "\nX=" + gyroscopeValue[0] + "\nY=" + gyroscopeValue[1] + "\nZ=" + gyroscopeValue[2]);
         }
 
         CompositeDisposable compositeDisposable = new CompositeDisposable();
